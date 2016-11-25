@@ -11,13 +11,13 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.manifold import MDS
 
 N_COEFF = 14
-ST_RATIO = .5
-INPUT_FILE = 'kapustin.wav'
+ST_RATIO = .8
+INPUT_FILE = 'samples/Kapustin_prelude1_op53.wav'
 N_FRAMES = 500
 FRAME_SIZE = 8192
-HOP_SIZE = 1024
+HOP_SIZE = 4096
 MAX_LOOPS = 3
-CLUSTERING_ALGO = KMeans
+CLUSTERING_ALGO = MiniBatchKMeans
 
 if __name__ == "__main__":
     print ('[soundtypes - probabilistic generation]\n')
@@ -31,7 +31,6 @@ if __name__ == "__main__":
     print ('computing multidimensional scaling...')
     mds = MDS(2)
     C_scaled = mds.fit_transform (C.T)
-
 
     print ('computing clusters...')
     n_clusters = int(C_scaled.shape[0] * ST_RATIO)
@@ -85,7 +84,6 @@ if __name__ == "__main__":
 
     print ('saving audio data...')
     librosa.output.write_wav('generated_sound.wav', gen_sound, sr)
-
 
     plt.close ('all')
 
