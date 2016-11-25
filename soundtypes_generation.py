@@ -12,12 +12,12 @@ from sklearn.manifold import MDS
 
 N_COEFF = 14
 ST_RATIO = .8
-INPUT_FILE = 'samples/Kapustin_prelude1_op53.wav'
+INPUT_FILE = 'samples/bass.wav'
 N_FRAMES = 500
 FRAME_SIZE = 8192
 HOP_SIZE = 4096
 MAX_LOOPS = 3
-CLUSTERING_ALGO = MiniBatchKMeans
+CLUSTERING_ALGO = KMeans
 
 if __name__ == "__main__":
     print ('[soundtypes - probabilistic generation]\n')
