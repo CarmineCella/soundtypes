@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA
 
 N_COEFF = 14
 SOURCE_FILE = 'samples/cage.wav'
-TARGET_FILE = 'samples/god_vocal_poly.wav'
+TARGET_FILE = 'samples/lachenmann.wav'
 FRAME_SIZE = 2948
 HOP_SIZE = 1024
 ST_RATIO = .9
