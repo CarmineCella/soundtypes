@@ -12,11 +12,11 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.preprocessing import StandardScaler
 
 N_COEFF = 14
-SOURCE_FILE = 'samples/kapustin.wav'
-TARGET_FILE = 'samples/Beethoven_Symph7_short.wav'
-FRAME_SIZE = 4096 
-HOP_SIZE = 1024
-ST_RATIO = .5
+SOURCE_FILE = 'samples/cage.wav'
+TARGET_FILE = 'samples/god_vocal_poly.wav'
+FRAME_SIZE = 4096
+HOP_SIZE = 2048
+ST_RATIO = .7
 CLUSTERING_ALGO = MiniBatchKMeans
 
 if __name__ == "__main__":
@@ -41,11 +41,11 @@ if __name__ == "__main__":
     mds = MDS(2)
     C_scaled_src = mds.fit_transform (C_src.T)
     C_scaled_dst = mds.fit_transform (C_dst.T)
-
-    scaler = StandardScaler ()
-    C_scaled_dst = scaler.fit_transform (C_scaled_dst)
-    C_scaled_src = scaler.transform (C_scaled_src)    
-    
+#
+#    scaler = StandardScaler ()    
+#    C_scaled_dst = scaler.fit_transform (C_scaled_dst)
+#    C_scaled_src = scaler.fit_transform (C_scaled_src)    
+#    
     print ('computing clusters...')
     n_clusters_src = int(C_scaled_src.shape[0] * ST_RATIO)
     cl_algo_src = CLUSTERING_ALGO (n_clusters_src).fit (C_scaled_src)
@@ -54,9 +54,10 @@ if __name__ == "__main__":
     n_clusters_dst = int(C_scaled_dst.shape[0] * ST_RATIO)
     cl_algo_dst = CLUSTERING_ALGO (n_clusters_dst).fit (C_scaled_dst)
     labels_dst = cl_algo_dst.predict(C_scaled_dst)
+  
     # matching clusters
     labels_match = cl_algo_dst.predict(centroids_src)
-    
+#    
     print ('generate hybridization...')
     soundtypes = {i:[] for i in range(n_clusters_dst)}
     for i in range(n_clusters_dst):
@@ -64,21 +65,33 @@ if __name__ == "__main__":
             if labels_dst[j] == i:
                 soundtypes[i].append(j)
     
-    n_frames = len(labels_match)
+    n_frames = len(labels_src)
     gen_sound = np.zeros(n_frames * HOP_SIZE + FRAME_SIZE)
+    envelope = []
     for i in range(n_frames):
-        p = soundtypes[labels_match[i]]
-        atom = p[np.random.randint(len(p))]
+        x = labels_match[labels_src[i]]
+        p = soundtypes[x]
+        if len(p) == 0:
+            atom = 0
+        else:
+            atom = p[np.random.randint(len(p))]
 
-        amp = np.sqrt(np.sum(
-            np.abs(y_pad_src[atom*HOP_SIZE:atom*HOP_SIZE+FRAME_SIZE]**2)))
-        
+        amp = np.sum (np.abs(y_pad_src[i*HOP_SIZE:i*HOP_SIZE+FRAME_SIZE]))
+        print (amp)
+        envelope.append(amp)
         chunk = y_pad_dst[atom*HOP_SIZE:atom*HOP_SIZE+FRAME_SIZE] \
             * np.hanning(FRAME_SIZE)
-        gen_sound[i*HOP_SIZE:i*HOP_SIZE+FRAME_SIZE] += chunk * amp
+
+        norm = np.max (np.abs(chunk))
+        if norm == 0:
+            norm = 1
+            
+        chunk /= norm
+        gen_sound[i*HOP_SIZE:i*HOP_SIZE+FRAME_SIZE] += (chunk * amp)
 
     print ('saving audio data...')
     librosa.output.write_wav('generated_sound.wav', gen_sound, sr)
+    librosa.output.write_wav('envelope.wav', np.array(envelope), sr)
 
     plt.close ('all')
 
