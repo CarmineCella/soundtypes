@@ -11,9 +11,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 N_COEFF = 20
-K = 10
+K = 5
 SOURCE_FILE = 'samples/cage.wav'
-TARGET_FILE = '../../datasets/b4/Brahms_Symph4_IV.wav'
+TARGET_FILE = 'samples/lachenmann.wav'
 FRAME_SIZE = 2948
 HOP_SIZE = 1024
 

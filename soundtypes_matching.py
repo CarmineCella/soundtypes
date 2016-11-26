@@ -15,8 +15,8 @@ from sklearn.decomposition import PCA
 N_COEFF = 20
 SOURCE_FILE = 'samples/cage.wav'
 TARGET_FILE = 'samples/god_vocal_poly_cut.wav'
-FRAME_SIZE = 2948
-HOP_SIZE = 1024
+FRAME_SIZE = 1024
+HOP_SIZE = 512
 ST_RATIO = .9
 K = 5
 CLUSTERING_ALGO = KMeans
