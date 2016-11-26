@@ -81,7 +81,6 @@ if __name__ == "__main__":
         chunk = y_pad[onsets[i - 1] * HOP_SIZE : onsets[i] * HOP_SIZE]
         chunk = fade_segment (chunk, FADE_MS, sr)
         segments.append (chunk)
-        librosa.output.write_wav (str(i) + '.wav', chunk, sr)
 
     print ('computing features...')   
     features = []
