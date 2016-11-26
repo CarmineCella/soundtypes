@@ -13,13 +13,13 @@ from sklearn.manifold import MDS
 
 N_COEFF = 20
 ST_RATIO = .7
-INPUT_FILE = 'samples/A_minor.wav'
+INPUT_FILE = 'samples/Jarrett_Vienna_cut.wav'
 N_FRAMES = 100
 FRAME_SIZE = 1024
 HOP_SIZE = 1024
 MAX_LOOPS = 3
 CLUSTERING_ALGO = KMeans
-WIDTH = 12
+WIDTH = 16
 FADE_MS = 10
 
 def spectral_flux (M):
@@ -34,7 +34,7 @@ def spectral_flux (M):
 def find_peaks (data, width):
     peaks = [0]
     prev  = 0
-    delay = (width) // 2
+    delay = ((width) // 2) + 1
     data = np.convolve(data, np.hanning (width))[:-width]    
     for i in range (1, len(data)-1):
         if data[i - 1] < data [i] and data [i + 1] < data[i]:
@@ -43,7 +43,7 @@ def find_peaks (data, width):
                 peaks.append(pos)
                 prev = pos
             
-    return np.array(peaks)
+    return data[delay:], np.array(peaks)
     
 def fade_segment (segment, ms, sr):
     samples = int ((ms / 1000) * sr)
@@ -57,7 +57,8 @@ def fade_segment (segment, ms, sr):
         
 if __name__ == "__main__":
     print ('[soundtypes - probabilistic generation on onsets]\n')
-    print ('computing features...')
+
+    print ('computing onsets...')
     [y, sr] = librosa.core.load(INPUT_FILE)
     y_pad = np.zeros(len(y) + FRAME_SIZE)
     y_pad[1:len(y)+1] = y
@@ -66,12 +67,12 @@ if __name__ == "__main__":
                                         hop_length=HOP_SIZE))
 
     flux = spectral_flux (M)
-    onsets = find_peaks (flux, WIDTH)                              
+    flux, onsets = find_peaks (flux, WIDTH)                              
 
     plt.close('all')
     plt.plot (flux)
     locations = np.zeros(flux.shape)
-    locations[onsets] = 1
+    locations[onsets] = np.max(flux)
     plt.stem(locations, 'r')
     plt.show()
 
@@ -80,11 +81,13 @@ if __name__ == "__main__":
         chunk = y_pad[onsets[i - 1] * HOP_SIZE : onsets[i] * HOP_SIZE]
         chunk = fade_segment (chunk, FADE_MS, sr)
         segments.append (chunk)
-   
+        librosa.output.write_wav (str(i) + '.wav', chunk, sr)
+
+    print ('computing features...')   
     features = []
     for i in range (len(segments)):
-        C = librosa.feature.mfcc(y=segments[i], sr=sr, n_mfcc=N_COEFF, n_fft=FRAME_SIZE, 
-                                 hop_length=HOP_SIZE)
+        C = librosa.feature.mfcc(y=segments[i], sr=sr, n_mfcc=N_COEFF, 
+                                 n_fft=FRAME_SIZE, hop_length=HOP_SIZE)
         features.append(np.mean (C, axis=1))                             
 
     C = np.vstack(features)
@@ -145,8 +148,6 @@ if __name__ == "__main__":
     
     print ('saving audio data...')
     librosa.output.write_wav('generated_sound.wav', gen_sound, sr)
-
-    plt.close ('all')
 
     plt.figure ()
     plt.plot (C_scaled[:, 0], C_scaled[:, 1], 'go')
