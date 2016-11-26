@@ -11,8 +11,8 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.manifold import MDS
 
 N_COEFF = 14
-ST_RATIO = .8
-INPUT_FILE = 'samples/bass.wav'
+ST_RATIO = .5
+INPUT_FILE = 'samples/Kapustin_prelude2_op53.wav'
 N_FRAMES = 500
 FRAME_SIZE = 8192
 HOP_SIZE = 4096

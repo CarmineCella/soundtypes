@@ -11,7 +11,7 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-N_COEFF = 14
+N_COEFF = 20
 SOURCE_FILE = 'samples/cage.wav'
 TARGET_FILE = 'samples/lachenmann.wav'
 FRAME_SIZE = 2948
