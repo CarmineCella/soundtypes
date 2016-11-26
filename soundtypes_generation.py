@@ -11,11 +11,11 @@ from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.manifold import MDS
 
 N_COEFF = 14
-ST_RATIO = .5
-INPUT_FILE = 'samples/Kapustin_prelude1_op53.wav'
+ST_RATIO = .2
+INPUT_FILE = 'samples/Kapustin_prelude_cut.wav'
 N_FRAMES = 500
 FRAME_SIZE = 8192
-HOP_SIZE = 4096
+HOP_SIZE = 2048
 MAX_LOOPS = 3
 CLUSTERING_ALGO = KMeans
 
