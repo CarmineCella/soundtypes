@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA
 N_COEFF = 20
 K = 10
 SOURCE_FILE = 'samples/cage.wav'
-TARGET_FILE = 'samples/Kapustin_prelude2_op53.wav'
+TARGET_FILE = '../../datasets/b4/Brahms_Symph4_IV.wav'
 FRAME_SIZE = 2948
 HOP_SIZE = 1024
 

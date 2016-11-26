@@ -8,15 +8,17 @@ import numpy as np
 import librosa
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans, MiniBatchKMeans
+from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 N_COEFF = 20
 SOURCE_FILE = 'samples/cage.wav'
-TARGET_FILE = 'samples/lachenmann.wav'
+TARGET_FILE = 'samples/god_vocal_poly_cut.wav'
 FRAME_SIZE = 2948
 HOP_SIZE = 1024
 ST_RATIO = .9
+K = 5
 CLUSTERING_ALGO = KMeans
 
 if __name__ == "__main__":
@@ -42,7 +44,7 @@ if __name__ == "__main__":
         
     scaler = StandardScaler ()    
     C_scaled_dst = scaler.fit_transform (C_scaled_dst)
-    C_scaled_src = scaler.transform (C_scaled_src)
+    C_scaled_src = scaler.fit_transform (C_scaled_src)
 
     print ('computing clusters...')
     n_clusters_src = int(C_scaled_src.shape[0] * ST_RATIO)
@@ -55,15 +57,8 @@ if __name__ == "__main__":
     labels_dst = cl_algo_dst.predict(C_scaled_dst)
   
     print ('matching clusters...')
-    labels_match = np.zeros(centroids_src.shape[0])
-    for i in range (centroids_src.shape[0]):
-        distances = []
-        for j in range (centroids_dst.shape[0]):
-            distances.append (np.sum (np.abs(centroids_src[i, :] - \
-                centroids_dst[j, :])))
-
-        labels_match[i] = np.argmin (distances)
-        
+    knn = NearestNeighbors(K).fit (centroids_dst);
+    dist, idxs = knn.kneighbors(centroids_src)
     
     print ('generate hybridization...')
     soundtypes = {i:[] for i in range(n_clusters_dst)}
@@ -75,7 +70,8 @@ if __name__ == "__main__":
     n_frames = len(labels_src)
     gen_sound = np.zeros(n_frames * HOP_SIZE + FRAME_SIZE)
     for i in range(n_frames):
-        x = labels_match[labels_src[i]]
+        labels_match = idxs[labels_src[i], :]
+        x = labels_match[np.random.randint(K)]
         p = soundtypes[x]
         if len(p) == 0:
             atom = 0
