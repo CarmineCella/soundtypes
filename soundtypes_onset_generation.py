@@ -12,7 +12,7 @@ from st_tools import get_segments, make_soundtypes
 
 N_COEFF = 20
 ST_RATIO = .7
-INPUT_FILE = 'samples/120-xx-Speed.wav'
+INPUT_FILE = 'samples/Jarrett_Vienna_cut.wav'
 N_FRAMES = 100
 FRAME_SIZE = 1024
 HOP_SIZE = 1024
