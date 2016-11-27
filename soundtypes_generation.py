@@ -7,17 +7,16 @@
 import numpy as np
 import librosa
 import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.manifold import MDS
+from st_tools import make_soundtypes
 
 N_COEFF = 14
 ST_RATIO = .2
-INPUT_FILE = 'samples/Kapustin_prelude_cut.wav'
+INPUT_FILE = 'samples/ciaccona.wav'
 N_FRAMES = 500
 FRAME_SIZE = 8192
 HOP_SIZE = 2048
-MAX_LOOPS = 3
-CLUSTERING_ALGO = KMeans
+MAX_LOOPS = 3 
 
 if __name__ == "__main__":
     print ('[soundtypes - probabilistic generation]\n')
@@ -28,34 +27,17 @@ if __name__ == "__main__":
     C = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=N_COEFF, n_fft=FRAME_SIZE, 
                              hop_length=HOP_SIZE)
 
-    print ('computing multidimensional scaling...')
+    print ('multidimensional scaling...')
     mds = MDS(2)
     C_scaled = mds.fit_transform (C.T)
 
-    print ('computing clusters...')
-    n_clusters = int(C_scaled.shape[0] * ST_RATIO)
-    cl_algo = CLUSTERING_ALGO (n_clusters).fit (C_scaled)
-    centroids = cl_algo.cluster_centers_
-    labels = cl_algo.predict(C_scaled)
-
-    print ('computing probabilities...')
-    markov = {i:[] for i in labels}
-
-    pos = 0
-    while pos < len(labels) - 1:
-        if labels[pos+1] != labels[pos]:
-            markov[labels[pos]].append(labels[pos+1])
-        pos += 1
+    print ('computing soundtypes...')
+    (dictionary, markov, centroids, labels) = \
+        make_soundtypes(C_scaled, ST_RATIO)
+    n_clusters = centroids.shape[0]
 
     print (markov)
     print ('generate new sequence...')
-
-    soundtypes = {i:[] for i in range(n_clusters)}
-    for i in range(n_clusters):
-        for j in range(len(labels)):
-            if labels[j] == i:
-                soundtypes[i].append(j)
-
     w1 = np.random.randint (n_clusters)
     prev_w1 = 0
     loops = 0
@@ -75,7 +57,7 @@ if __name__ == "__main__":
             loops = 0
             
         gen_sequence.append(w1)
-        p = soundtypes[(w1)]
+        p = dictionary[(w1)]
         atom = p[np.random.randint(len(p))]
 
         chunk = y_pad[atom*HOP_SIZE:atom*HOP_SIZE+FRAME_SIZE] \

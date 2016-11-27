@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA
 N_COEFF = 20
 K = 5
 SOURCE_FILE = 'samples/cage.wav'
-TARGET_FILE = 'samples/lachenmann.wav'
+TARGET_FILE = 'samples/ciaccona.wav'
 FRAME_SIZE = 2048
 HOP_SIZE = 1024
 

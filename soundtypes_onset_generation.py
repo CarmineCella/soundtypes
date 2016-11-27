@@ -7,80 +7,34 @@
 import numpy as np
 import librosa
 import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.manifold import MDS
-
+from st_tools import get_segments, make_soundtypes
 
 N_COEFF = 20
 ST_RATIO = .7
-INPUT_FILE = 'samples/Jarrett_Vienna_cut.wav'
+INPUT_FILE = 'samples/120-xx-Speed.wav'
 N_FRAMES = 100
 FRAME_SIZE = 1024
 HOP_SIZE = 1024
 MAX_LOOPS = 3
-CLUSTERING_ALGO = KMeans
 WIDTH = 16
 FADE_MS = 10
-
-def spectral_flux (M):
-    flux = []
-    for i in range (M.shape[1] - 1):
-        flux.append (np.sum(np.abs (M[:, i] -  M[:, i + 1])))                                                
-
-    if (np.max(flux)):
-        flux /= np.max(flux)                                   
-    return np.array(flux)
-    
-def find_peaks (data, width):
-    peaks = [0]
-    prev  = 0
-    delay = ((width) // 2) + 1
-    data = np.convolve(data, np.hanning (width))[:-width]    
-    for i in range (1, len(data)-1):
-        if data[i - 1] < data [i] and data [i + 1] < data[i]:
-            pos = max (0, i - delay)
-            if (pos != prev):
-                peaks.append(pos)
-                prev = pos
-            
-    return data[delay:], np.array(peaks)
-    
-def fade_segment (segment, ms, sr):
-    samples = int ((ms / 1000) * sr)
-    if (samples * 2 >= len(segment)):
-        return segment
-    ramp_up = np.linspace (0, 1, samples)
-    ramp_dw = np.linspace (1, 0, samples)
-    segment[0:samples] *= ramp_up
-    segment[-samples:] *= ramp_dw
-    return segment
         
 if __name__ == "__main__":
     print ('[soundtypes - probabilistic generation on onsets]\n')
 
-    print ('computing onsets...')
+    print ('computing segments...')
     [y, sr] = librosa.core.load(INPUT_FILE)
-    y_pad = np.zeros(len(y) + FRAME_SIZE)
-    y_pad[1:len(y)+1] = y
     
-    M = np.abs (librosa.spectrum.stft(y=y, n_fft=FRAME_SIZE, 
-                                        hop_length=HOP_SIZE))
-
-    flux = spectral_flux (M)
-    flux, onsets = find_peaks (flux, WIDTH)                              
-
+    (segments, onsets, flux) = get_segments (y, sr, FRAME_SIZE, HOP_SIZE, \
+        FADE_MS, WIDTH)
+        
     plt.close('all')
     plt.plot (flux)
     locations = np.zeros(flux.shape)
     locations[onsets] = np.max(flux)
     plt.stem(locations, 'r')
     plt.show()
-
-    segments = []
-    for i in range (1, len(onsets)):
-        chunk = y_pad[onsets[i - 1] * HOP_SIZE : onsets[i] * HOP_SIZE]
-        chunk = fade_segment (chunk, FADE_MS, sr)
-        segments.append (chunk)
 
     print ('computing features...')   
     features = []
@@ -91,34 +45,17 @@ if __name__ == "__main__":
 
     C = np.vstack(features)
     
-    print ('computing multidimensional scaling...')
+    print ('multidimensional scaling...')
     mds = MDS(2)
     C_scaled = mds.fit_transform (C)
 
-    print ('computing clusters...')
-    n_clusters = int(C_scaled.shape[0] * ST_RATIO)
-    cl_algo = CLUSTERING_ALGO (n_clusters).fit (C_scaled)
-    centroids = cl_algo.cluster_centers_
-    labels = cl_algo.predict(C_scaled)
-
-    print ('computing probabilities...')
-    markov = {i:[] for i in labels}
-
-    pos = 0
-    while pos < len(labels) - 1:
-        if labels[pos+1] != labels[pos]:
-            markov[labels[pos]].append(labels[pos+1])
-        pos += 1
-
+    print ('computing soundtypes...')
+    (dictionary, markov, centroids, labels) = \
+        make_soundtypes(C_scaled, ST_RATIO)
+    n_clusters = centroids.shape[0]
     print (markov)
+    
     print ('generate new sequence...')
-
-    soundtypes = {i:[] for i in range(n_clusters)}
-    for i in range(n_clusters):
-        for j in range(len(labels)):
-            if labels[j] == i:
-                soundtypes[i].append(j)
-
     w1 = np.random.randint (n_clusters)
     prev_w1 = 0
     loops = 0
@@ -138,7 +75,7 @@ if __name__ == "__main__":
             loops = 0
             
         gen_sequence.append(w1)
-        p = soundtypes[(w1)]
+        p = dictionary[(w1)]
         atom = p[np.random.randint(len(p))]
 
         gen_sound.append (segments[atom])

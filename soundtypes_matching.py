@@ -7,19 +7,18 @@
 import numpy as np
 import librosa
 import matplotlib.pyplot as plt
-from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from st_tools import make_soundtypes
 
 N_COEFF = 20
 SOURCE_FILE = 'samples/cage.wav'
-TARGET_FILE = 'samples/god_vocal_poly_cut.wav'
+TARGET_FILE = 'samples/lachenmann.wav'
 FRAME_SIZE = 2048
 HOP_SIZE = 1024
-ST_RATIO = .9
+ST_RATIO = .7
 K = 5
-CLUSTERING_ALGO = KMeans
 
 if __name__ == "__main__":
     print ('[soundtypes - timbre matching]\n')
@@ -46,33 +45,25 @@ if __name__ == "__main__":
     C_scaled_dst = scaler.fit_transform (C_scaled_dst)
     C_scaled_src = scaler.fit_transform (C_scaled_src)
 
-    print ('computing clusters...')
-    n_clusters_src = int(C_scaled_src.shape[0] * ST_RATIO)
-    cl_algo_src = CLUSTERING_ALGO (n_clusters_src).fit (C_scaled_src)
-    centroids_src = cl_algo_src.cluster_centers_
-    labels_src = cl_algo_src.predict(C_scaled_src)
-    n_clusters_dst = int(C_scaled_dst.shape[0] * ST_RATIO)
-    cl_algo_dst = CLUSTERING_ALGO (n_clusters_dst).fit (C_scaled_dst)
-    centroids_dst = cl_algo_dst.cluster_centers_
-    labels_dst = cl_algo_dst.predict(C_scaled_dst)
-  
+    print ('computing soundtypes...')
+    (dictionary_src, markov_src, centroids_src, labels_src) = \
+        make_soundtypes(C_scaled_src, ST_RATIO)
+    n_clusters_src = centroids_src.shape[0]
+    (dictionary_dst, markov_dst, centroids_dst, labels_dst) = \
+        make_soundtypes(C_scaled_dst, ST_RATIO)
+    n_clusters_dst = centroids_dst.shape[0]
+    
     print ('matching clusters...')
     knn = NearestNeighbors(K).fit (centroids_dst);
     dist, idxs = knn.kneighbors(centroids_src)
     
-    print ('generate hybridization...')
-    soundtypes = {i:[] for i in range(n_clusters_dst)}
-    for i in range(n_clusters_dst):
-        for j in range(len(labels_dst)):
-            if labels_dst[j] == i:
-                soundtypes[i].append(j)
-    
+    print ('generate hybridization...')   
     n_frames = len(labels_src)
     gen_sound = np.zeros(n_frames * HOP_SIZE + FRAME_SIZE)
     for i in range(n_frames):
         labels_match = idxs[labels_src[i], :]
         x = labels_match[np.random.randint(K)]
-        p = soundtypes[x]
+        p = dictionary_dst[x]
         if len(p) == 0:
             atom = 0
         else:
@@ -92,7 +83,6 @@ if __name__ == "__main__":
 
     print ('saving audio data...')
     librosa.output.write_wav('generated_sound.wav', gen_sound, sr)
-
 
     pca = PCA(2)
     C_scaled_dst = pca.fit_transform (C_scaled_dst)
