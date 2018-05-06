@@ -75,7 +75,6 @@ if __name__ == "__main__":
             * np.hanning(FRAME_SIZE)
 
         norm = np.max (np.abs(chunk))
-        print (norm)
         if norm == 0:
             norm = 1
             
