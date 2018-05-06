@@ -11,7 +11,7 @@ from sklearn.manifold import MDS
 from st_tools import get_segments, make_soundtypes
 
 N_COEFF = 20
-ST_RATIO = .7
+ST_RATIO = .8
 INPUT_FILE = 'samples/Jarrett_Vienna_cut.wav'
 N_FRAMES = 100
 FRAME_SIZE = 1024
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         atom = p[np.random.randint(len(p))]
 
         gen_sound.append (segments[atom])
-
+        
     gen_sound = np.hstack (gen_sound)
     
     print ('saving audio data...')

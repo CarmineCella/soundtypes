@@ -12,7 +12,7 @@ from st_tools import make_soundtypes
 
 N_COEFF = 14
 ST_RATIO = .2
-INPUT_FILE = 'samples/ciaccona.wav'
+INPUT_FILE = 'samples/mixx_jazz.wav'
 N_FRAMES = 500
 FRAME_SIZE = 8192
 HOP_SIZE = 2048

@@ -12,13 +12,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from st_tools import make_soundtypes
 
-N_COEFF = 20
+N_COEFF = 13
 SOURCE_FILE = 'samples/cage.wav'
-TARGET_FILE = 'samples/lachenmann.wav'
+TARGET_FILE = 'samples/god_vocal_poly.wav'
 FRAME_SIZE = 2048
-HOP_SIZE = 1024
-ST_RATIO = .7
-K = 5
+HOP_SIZE = 512
+ST_RATIO = .9
+K = 4
 
 if __name__ == "__main__":
     print ('[soundtypes - timbre matching]\n')
@@ -75,11 +75,12 @@ if __name__ == "__main__":
             * np.hanning(FRAME_SIZE)
 
         norm = np.max (np.abs(chunk))
+        print (norm)
         if norm == 0:
             norm = 1
             
         chunk /= norm
-        gen_sound[i * HOP_SIZE : i * HOP_SIZE + FRAME_SIZE] += (chunk * amp)
+        gen_sound[i * HOP_SIZE : i * HOP_SIZE + FRAME_SIZE] += (chunk * amp / n_frames)
 
     print ('saving audio data...')
     librosa.output.write_wav('generated_sound.wav', gen_sound, sr)
