@@ -11,17 +11,18 @@ from sklearn.manifold import MDS
 from st_tools import make_soundtypes
 
 N_COEFF = 14
-ST_RATIO = .2
-INPUT_FILE = 'samples/mixx_jazz.wav'
+ST_RATIO = .9
+INPUT_FILE = 'samples/bass.wav'
 N_FRAMES = 500
-FRAME_SIZE = 8192
-HOP_SIZE = 2048
+FRAME_SIZE = 1024
+HOP_SIZE = 512
 MAX_LOOPS = 3 
+SR = 44100
 
 if __name__ == "__main__":
     print ('[soundtypes - probabilistic generation]\n')
     print ('computing features...')
-    [y, sr] = librosa.core.load(INPUT_FILE)
+    [y, sr] = librosa.core.load(INPUT_FILE, SR)
     y_pad = np.zeros(len(y) + FRAME_SIZE)
     y_pad[1:len(y)+1] = y
     C = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=N_COEFF, n_fft=FRAME_SIZE, 

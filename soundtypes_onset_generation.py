@@ -11,7 +11,7 @@ from sklearn.manifold import MDS
 from st_tools import get_segments, make_soundtypes
 
 N_COEFF = 20
-ST_RATIO = .8
+ST_RATIO = .7
 INPUT_FILE = 'samples/Jarrett_Vienna_cut.wav'
 N_FRAMES = 100
 FRAME_SIZE = 1024
@@ -19,12 +19,13 @@ HOP_SIZE = 1024
 MAX_LOOPS = 3
 WIDTH = 16
 FADE_MS = 10
+SR = 44100
         
 if __name__ == "__main__":
     print ('[soundtypes - probabilistic generation on onsets]\n')
 
     print ('computing segments...')
-    [y, sr] = librosa.core.load(INPUT_FILE)
+    [y, sr] = librosa.core.load(INPUT_FILE, SR)
     
     (segments, onsets, flux) = get_segments (y, sr, FRAME_SIZE, HOP_SIZE, \
         FADE_MS, WIDTH)

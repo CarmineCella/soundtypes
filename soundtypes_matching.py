@@ -14,16 +14,17 @@ from st_tools import make_soundtypes
 
 N_COEFF = 13
 SOURCE_FILE = 'samples/cage.wav'
-TARGET_FILE = 'samples/god_vocal_poly.wav'
+TARGET_FILE = 'samples/lachenmann.wav'
 FRAME_SIZE = 2048
-HOP_SIZE = 512
-ST_RATIO = .9
-K = 4
+HOP_SIZE = 1024
+ST_RATIO = .7
+K = 5
+SR = 44100
 
 if __name__ == "__main__":
     print ('[soundtypes - timbre matching]\n')
     print ('computing features...')
-    [y_src, sr] = librosa.core.load(SOURCE_FILE)
+    [y_src, sr] = librosa.core.load(SOURCE_FILE, SR)
 
     y_pad_src = np.zeros(len(y_src) + FRAME_SIZE)
     y_pad_src[1:len(y_src)+1] = y_src

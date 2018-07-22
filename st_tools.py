@@ -7,7 +7,7 @@ Created on Sun Nov 27 15:56:49 2016
 """
 
 import numpy as np
-from sklearn.cluster import KMeans, MiniBatchKMeans
+from sklearn.cluster import KMeans
 import librosa
 
 CLUSTERING_ALGO = KMeans
