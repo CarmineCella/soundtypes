@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     C_src = librosa.feature.mfcc(y=y_src, sr=sr, n_mfcc=N_COEFF, 
                                  n_fft=FRAME_SIZE, hop_length=HOP_SIZE)
-    [y_dst, sr] = librosa.core.load(TARGET_FILE)
+    [y_dst, sr] = librosa.core.load(TARGET_FILE, SR)
     
     y_pad_dst = np.zeros(len(y_dst) + FRAME_SIZE)
     y_pad_dst[1:len(y_dst)+1] = y_dst
