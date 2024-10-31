@@ -46,7 +46,7 @@ def fade_segment (segment, ms, sr):
     return segment
     
 def get_segments (y, sr, frame_size, hop_size, fade_ms, width):
-    M = np.abs (librosa.spectrum.stft(y=y, n_fft=frame_size, 
+    M = np.abs (librosa.stft(y=y, n_fft=frame_size, 
                                         hop_length=hop_size))
     
     flux = spectral_flux (M)

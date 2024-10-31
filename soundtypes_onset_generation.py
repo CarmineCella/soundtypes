@@ -9,6 +9,7 @@ import librosa
 import matplotlib.pyplot as plt
 from sklearn.manifold import MDS
 from st_tools import get_segments, make_soundtypes
+import soundfile as sf
 
 N_COEFF = 20
 ST_RATIO = .7
@@ -25,17 +26,17 @@ if __name__ == "__main__":
     print ('[soundtypes - probabilistic generation on onsets]\n')
 
     print ('computing segments...')
-    [y, sr] = librosa.core.load(INPUT_FILE, SR)
+    [y, sr] = librosa.core.load(INPUT_FILE, sr=SR)
     
     (segments, onsets, flux) = get_segments (y, sr, FRAME_SIZE, HOP_SIZE, \
         FADE_MS, WIDTH)
         
-    plt.close('all')
-    plt.plot (flux)
-    locations = np.zeros(flux.shape)
-    locations[onsets] = np.max(flux)
-    plt.stem(locations, 'r')
-    plt.show()
+    # plt.close('all')
+    # plt.plot (flux)
+    # locations = np.zeros(flux.shape)
+    # locations[onsets] = np.max(flux)
+    # plt.stem(locations, 'r')
+    # plt.show()
 
     print ('computing features...')   
     features = []
@@ -84,7 +85,7 @@ if __name__ == "__main__":
     gen_sound = np.hstack (gen_sound)
     
     print ('saving audio data...')
-    librosa.output.write_wav('generated_sound.wav', gen_sound, sr)
+    sf.write('generated_sound.wav', gen_sound, sr)
 
     plt.figure ()
     plt.plot (C_scaled[:, 0], C_scaled[:, 1], 'go')

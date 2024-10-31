@@ -11,6 +11,7 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from st_tools import make_soundtypes
+import soundfile as sf
 
 N_COEFF = 13
 SOURCE_FILE = 'samples/cage.wav'
@@ -24,14 +25,14 @@ SR = 44100
 if __name__ == "__main__":
     print ('[soundtypes - timbre matching]\n')
     print ('computing features...')
-    [y_src, sr] = librosa.core.load(SOURCE_FILE, SR)
+    [y_src, sr] = librosa.core.load(SOURCE_FILE,sr=SR)
 
     y_pad_src = np.zeros(len(y_src) + FRAME_SIZE)
     y_pad_src[1:len(y_src)+1] = y_src
 
     C_src = librosa.feature.mfcc(y=y_src, sr=sr, n_mfcc=N_COEFF, 
                                  n_fft=FRAME_SIZE, hop_length=HOP_SIZE)
-    [y_dst, sr] = librosa.core.load(TARGET_FILE, SR)
+    [y_dst, sr] = librosa.core.load(TARGET_FILE, sr=SR)
     
     y_pad_dst = np.zeros(len(y_dst) + FRAME_SIZE)
     y_pad_dst[1:len(y_dst)+1] = y_dst
@@ -55,7 +56,7 @@ if __name__ == "__main__":
     n_clusters_dst = centroids_dst.shape[0]
     
     print ('matching clusters...')
-    knn = NearestNeighbors(K).fit (centroids_dst);
+    knn = NearestNeighbors(n_neighbors=K).fit (centroids_dst)
     dist, idxs = knn.kneighbors(centroids_src)
     
     print ('generate hybridization...')   
@@ -83,7 +84,7 @@ if __name__ == "__main__":
         gen_sound[i * HOP_SIZE : i * HOP_SIZE + FRAME_SIZE] += (chunk * amp / n_frames)
 
     print ('saving audio data...')
-    librosa.output.write_wav('generated_sound.wav', gen_sound, sr)
+    sf.write ('generated_sound.wav', gen_sound, sr)
 
     pca = PCA(2)
     C_scaled_dst = pca.fit_transform (C_scaled_dst)

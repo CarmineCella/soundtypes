@@ -9,25 +9,28 @@ import matplotlib.pyplot as plt
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+import soundfile as sf
 
+SR = 44100
 N_COEFF = 20
 K = 5
 SOURCE_FILE = 'samples/cage.wav'
-TARGET_FILE = 'samples/ciaccona.wav'
+TARGET_FILE = 'samples/Kapustin_prelude_cut.wav'
 FRAME_SIZE = 2048
 HOP_SIZE = 1024
+SCALING = 100
 
 if __name__ == "__main__":
     print ('[direct timbre matching]\n')
     print ('computing features...')
-    [y_src, sr] = librosa.core.load(SOURCE_FILE)
+    [y_src, sr] = librosa.core.load(SOURCE_FILE, sr=SR)
 
     y_pad_src = np.zeros(len(y_src) + FRAME_SIZE)
     y_pad_src[1:len(y_src)+1] = y_src
 
     C_src = librosa.feature.mfcc(y=y_src, sr=sr, n_mfcc=N_COEFF, 
                                  n_fft=FRAME_SIZE, hop_length=HOP_SIZE)
-    [y_dst, sr] = librosa.core.load(TARGET_FILE)
+    [y_dst, sr] = librosa.core.load(TARGET_FILE, sr= SR)
     
     y_pad_dst = np.zeros(len(y_dst) + FRAME_SIZE)
     y_pad_dst[1:len(y_dst)+1] = y_dst
@@ -43,7 +46,7 @@ if __name__ == "__main__":
     C_scaled_src = scaler.fit_transform (C_scaled_src)
 
     print ('fitting datasets...')
-    knn = NearestNeighbors(K).fit (C_scaled_dst);
+    knn = NearestNeighbors(n_neighbors=K).fit (C_scaled_dst);
     
     print ('generate hybridization...')
     
@@ -57,15 +60,11 @@ if __name__ == "__main__":
         chunk = y_pad_dst[atom * HOP_SIZE : atom * HOP_SIZE + FRAME_SIZE] \
             * np.hanning(FRAME_SIZE)
 
-        norm = np.max (np.abs(chunk))
-        if norm == 0:
-            norm = 1
-            
-        chunk /= norm
+        chunk /= SCALING
         gen_sound[i * HOP_SIZE : i * HOP_SIZE + FRAME_SIZE] += (chunk * amp)
 
     print ('saving audio data...')
-    librosa.output.write_wav('generated_sound.wav', gen_sound, sr)
+    sf.write('generated_sound.wav', gen_sound, sr)
 
 
     pca = PCA(2)
